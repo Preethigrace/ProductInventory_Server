@@ -38,5 +38,13 @@ class Mapper {
         }
         return model.FindOneAndUpdate(obj)
     }
+    async update(entity,obj){
+        const model = this.models[entity]
+        if(!model) {
+            throw new Error(`Invalid entity: ${entity}`)
+        }
+        return model.updateOne(obj)
+    }
+ 
 }
 module.exports = Mapper

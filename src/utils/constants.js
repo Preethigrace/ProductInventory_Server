@@ -16,6 +16,8 @@ exports.nodata = 'N001'
 exports.bodyrequired = 'S000'
 exports.parametersrequired = 'S002'
 
+exports.emailRegex = /^[\w-]+(?:\.[\w-]+)*@(?:[\w-]+\.)+[a-zA-Z]{2,7}$/;
+
   
 // exports.userSequence = 'PRDINVUSR'
 // var usersequence = 'PRDINVUSR'
