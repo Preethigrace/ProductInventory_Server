@@ -1,12 +1,11 @@
 const express = require('express');
-
 const Mapper = require('../db/baseRepo');
 const _constants = require('../utils/constants');
 const loginModel = require('../models/LoginModel');
 const userModel = require('../models/UserModel');
 const passwordHash = require('password-hash')
 const secretKey = 'productinventory';
-const jwt = require('jsonwebtoken');
+const Constants = require('../utils/constants')
 
 const aes256 = require('aes256');
 const models = {
@@ -19,6 +18,8 @@ const mapper = new Mapper(models)
 //const {sequences,sequenceModelName} =require('../utils/Constants')
 
 exports.createLoginUser = async(req,res)=>{
+console.log("login")
+
 
     const {emailID,password}  =req.body;
     try{
@@ -50,7 +51,6 @@ exports.createLoginUser = async(req,res)=>{
           data:'Password Mismatch'
         })
       }
-      
       const expiresIn = 60 * 60 * 24 // 1 day
       const user2 = {
         userId : userDetails.UserID,
@@ -78,11 +78,53 @@ exports.createLoginUser = async(req,res)=>{
       })
     }
   }
-  
- 
+  exports.forgotPassword = async(req,res)=>{
+    console.log('forgot password api')
+
+    const {emailID} = req.body
+    try{
+      if (!Constants.emailRegex.test(emailID)) {
+        res.status(_constants.serverResponseCodes.Invalid_Parameters).json({
+          type: false,
+          code:'S002',
+          msg:'Invalid emailID'
+        })
+      }
       
+      const userObj = {"emailID":emailID}
+      const userDetails = await mapper.FindOne('loginModel',userObj)
+      
+      if(!userDetails){
+        return res.status(_constants.serverResponseCodes.NoData).json({
+          type: true,
+          code: 'N001',
+          msg: `User does not exist with ${emailID}`
+      });
+      }
+     
+      const password = req.body.password
+   
+      const hashedPassword = passwordHash.generate(password);
+      
+            const userIDValue = userDetails.userID.toString();
+          
+      const verifyEmail = await mapper.update('loginModel',{userID:userIDValue,password:hashedPassword})
+            console.log('345',verifyEmail)
 
+            if (verifyEmail) {
+              res.status(_constants.serverResponseCodes.Success).json({
+                type:true,
+                code:'S000',
+                msg:"Password Successfully Updated"
+              })
 
-
-
-
+            }
+    }catch(error){
+      res.status(_constants.serverResponseCodes.Error).json({
+        type:false,
+        code:'E001',
+        data:error
+      })
+return
+    }
+  }
